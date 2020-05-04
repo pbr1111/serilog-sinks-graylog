@@ -28,7 +28,7 @@ namespace Serilog.Sinks.Graylog.Core.Transport.Udp
         /// Sends the specified payload.
         /// </summary>
         /// <param name="payload">The payload.</param>
-        public Task Send(byte[] payload)
+        public Task SendAsync(byte[] payload)
         {
             return _client.SendAsync(payload, payload.Length, _target);
         }

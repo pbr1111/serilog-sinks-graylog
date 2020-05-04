@@ -21,7 +21,7 @@ namespace Serilog.Sinks.Graylog.Core.Tests.Transport.Udp
 
             var client = new UdpTransportClient(ipLocalEndPoint);
 
-            client.Send(bytes.ToArray());
+            client.SendAsync(bytes.ToArray());
         }
     }
 }

@@ -64,22 +64,23 @@ namespace Serilog.Sinks.Graylog.Batching
                 period = TimeSpan.FromSeconds(1);
             }
 
-            // ReSharper disable once UseObjectOrCollectionInitializer
-            var options = new BatchingGraylogSinkOptions();
-            options.HostnameOrAddress = hostnameOrAddress;
-            options.Port = port;
-            options.TransportType = transportType;
-            options.MinimumLogEventLevel = minimumLogEventLevel;
-            options.MessageGeneratorType = messageIdGeneratorType;
-            options.ShortMessageMaxLength = shortMessageMaxLength;
-            options.StackTraceDepth = stackTraceDepth;
-            options.Facility = facility;
-            options.BatchSizeLimit = batchSizeLimit;
-            options.Period = period;
-            options.QueueLimit = queueLimit;
-            options.MaxMessageSizeInUdp = maxMessageSizeInUdp;
-            options.IncludeMessageTemplate = includeMessageTemplate;
-            options.MessageTemplateFieldName = messageTemplateFieldName;
+            var options = new BatchingGraylogSinkOptions
+            {
+                HostnameOrAddress = hostnameOrAddress,
+                Port = port,
+                TransportType = transportType,
+                MinimumLogEventLevel = minimumLogEventLevel,
+                MessageGeneratorType = messageIdGeneratorType,
+                ShortMessageMaxLength = shortMessageMaxLength,
+                StackTraceDepth = stackTraceDepth,
+                Facility = facility,
+                BatchSizeLimit = batchSizeLimit,
+                Period = period,
+                QueueLimit = queueLimit,
+                MaxMessageSizeInUdp = maxMessageSizeInUdp,
+                IncludeMessageTemplate = includeMessageTemplate,
+                MessageTemplateFieldName = messageTemplateFieldName
+            };
 
             return loggerSinkConfiguration.Graylog(options);
         }

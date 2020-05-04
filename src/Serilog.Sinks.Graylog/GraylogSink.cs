@@ -1,30 +1,20 @@
-﻿using System;
-using System.Threading.Tasks;
-using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json.Linq;
 using Serilog.Core;
 using Serilog.Debugging;
 using Serilog.Events;
 using Serilog.Sinks.Graylog.Core;
-using Serilog.Sinks.Graylog.Core.Transport;
+using System;
+using System.Threading.Tasks;
 
 namespace Serilog.Sinks.Graylog
 {
     public class GraylogSink : ILogEventSink, IDisposable
     {
-        private readonly Lazy<IGelfConverter> _converter;
-        private readonly Lazy<ITransport> _transport;
+        private readonly ISinkComponentsBuilder _sinkComponentsBuilder;
 
-        
         public GraylogSink(GraylogSinkOptions options)
         {
-            ISinkComponentsBuilder sinkComponentsBuilder = new SinkComponentsBuilder(options);
-            _transport = new Lazy<ITransport>(() => sinkComponentsBuilder.MakeTransport());
-            _converter = new Lazy<IGelfConverter>(() => sinkComponentsBuilder.MakeGelfConverter());
-        }
-        
-        public void Dispose()
-        {
-            _transport.Value.Dispose();
+            _sinkComponentsBuilder = new SinkComponentsBuilder(options);
         }
 
         public void Emit(LogEvent logEvent)
@@ -41,11 +31,19 @@ namespace Serilog.Sinks.Graylog
             }
         }
 
-        private Task EmitAsync(LogEvent logEvent)
+        private async Task EmitAsync(LogEvent logEvent)
         {
-            JObject json = _converter.Value.GetGelfJson(logEvent);
+            var transport = await _sinkComponentsBuilder.GetTransportAsync();
+
+            JObject json = _sinkComponentsBuilder.GetGelfConverter().GetGelfJson(logEvent);
             string payload = json.ToString(Newtonsoft.Json.Formatting.None);
-            return _transport.Value.Send(payload);
+
+            await transport.SendAsync(payload);
+        }
+
+        public void Dispose()
+        {
+            _sinkComponentsBuilder?.Dispose();
         }
     }
 }

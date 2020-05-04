@@ -12,6 +12,6 @@ namespace Serilog.Sinks.Graylog.Core.Transport
         /// Sends the specified target.
         /// </summary>
         /// <param name="message">The message.</param>
-        Task Send(string message);
+        Task SendAsync(string message);
     }
 }

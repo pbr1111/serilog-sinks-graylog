@@ -25,9 +25,9 @@ namespace Serilog.Sinks.Graylog.Core.Tests.Transport.Http
 
             var payload = _fixture.Create<string>();
 
-            await target.Send(payload);
+            await target.SendAsync(payload);
 
-            transportClient.Verify(c => c.Send(payload), Times.Once);
+            transportClient.Verify(c => c.SendAsync(payload), Times.Once);
         }
     }
 }

@@ -34,7 +34,7 @@ namespace Serilog.Sinks.Graylog.Tests
                 new MessageTemplate("O_o", new List<MessageTemplateToken>()), new List<LogEventProperty>());
 
             var jObject = new JObject();
-            transport.Setup(c => c.Send(jObject.ToString(Newtonsoft.Json.Formatting.None))).Returns(Task.CompletedTask);
+            transport.Setup(c => c.SendAsync(jObject.ToString(Newtonsoft.Json.Formatting.None))).Returns(Task.CompletedTask);
 
 
             gelfConverter.Setup(c => c.GetGelfJson(logEvent)).Returns(jObject);
@@ -43,7 +43,7 @@ namespace Serilog.Sinks.Graylog.Tests
 
             gelfConverter.VerifyAll();
 
-            transport.Verify(c => c.Send(It.IsAny<string>()));
+            transport.Verify(c => c.SendAsync(It.IsAny<string>()));
         }
     }
 }

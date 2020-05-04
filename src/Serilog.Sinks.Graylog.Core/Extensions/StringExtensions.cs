@@ -2,20 +2,23 @@
 using System.IO;
 using System.IO.Compression;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Serilog.Sinks.Graylog.Core.Extensions
 {
     public static class StringExtensions
     {
-        public static byte[] Compress(this string source)
+        public static async Task<byte[]> CompressAsync(this string source)
         {
-            var resultStream = new MemoryStream();
-            using (var gzipStream = new GZipStream(resultStream, CompressionMode.Compress))
+            using (var resultStream = new MemoryStream())
             {
-                byte[] messageBytes = Encoding.UTF8.GetBytes(source);
-                gzipStream.Write(messageBytes, 0, messageBytes.Length);
+                using (var gzipStream = new GZipStream(resultStream, CompressionMode.Compress))
+                {
+                    byte[] messageBytes = Encoding.UTF8.GetBytes(source);
+                    await gzipStream.WriteAsync(messageBytes, 0, messageBytes.Length);
+                }
+                return resultStream.ToArray();
             }
-            return resultStream.ToArray();
         }
 
         /// <summary>

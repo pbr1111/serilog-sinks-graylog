@@ -19,7 +19,7 @@ namespace Serilog.Sinks.Graylog.Core.Transport.Http
             _httpClient.DefaultRequestHeaders.CacheControl = new CacheControlHeaderValue { NoCache = true };
         }
 
-        public async Task Send(string message)
+        public async Task SendAsync(string message)
         {
             var content = new StringContent(message, System.Text.Encoding.UTF8, "application/json");
             var url = new Uri(_graylogUrl);

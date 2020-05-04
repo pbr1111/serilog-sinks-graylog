@@ -1,88 +1,57 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json.Linq;
 using Serilog.Debugging;
 using Serilog.Events;
 using Serilog.Sinks.Graylog.Core;
-using Serilog.Sinks.Graylog.Core.Transport;
 using Serilog.Sinks.PeriodicBatching;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Serilog.Sinks.Graylog.Batching
 {
     public class PeriodicBatchingGraylogSink : PeriodicBatchingSink
     {
-        private readonly Lazy<ITransport> _transport;
-        private readonly Lazy<IGelfConverter> _converter;
+        private readonly ISinkComponentsBuilder _sinkComponentsBuilder;
 
         public PeriodicBatchingGraylogSink(BatchingGraylogSinkOptions options) : this(options, options.BatchSizeLimit, options.Period, options.QueueLimit)
         {
-
+            _sinkComponentsBuilder = new SinkComponentsBuilder(options);
         }
 
         public PeriodicBatchingGraylogSink(BatchingGraylogSinkOptions options, int batchSizeLimit, TimeSpan period) : base(batchSizeLimit, period)
         {
-            ISinkComponentsBuilder sinkComponentsBuilder = new SinkComponentsBuilder(options);
-            _transport = new Lazy<ITransport>(() => sinkComponentsBuilder.MakeTransport());
-            _converter = new Lazy<IGelfConverter>(() => sinkComponentsBuilder.MakeGelfConverter());
-
+            _sinkComponentsBuilder = new SinkComponentsBuilder(options);
         }
 
         public PeriodicBatchingGraylogSink(BatchingGraylogSinkOptions options, int batchSizeLimit, TimeSpan period, int queueLimit) : base(batchSizeLimit, period, queueLimit)
         {
-            ISinkComponentsBuilder sinkComponentsBuilder = new SinkComponentsBuilder(options);
-            _transport = new Lazy<ITransport>(() => sinkComponentsBuilder.MakeTransport());
-            _converter = new Lazy<IGelfConverter>(() => sinkComponentsBuilder.MakeGelfConverter());
+            _sinkComponentsBuilder = new SinkComponentsBuilder(options);
         }
 
-        protected override void EmitBatch(IEnumerable<LogEvent> events)
-        {
-            // ReSharper disable once PossibleMultipleEnumeration
-            try
-            {
-                Task[] sendTasks = events.Select(logEvent =>
-                {
-                    JObject json = _converter.Value.GetGelfJson(logEvent);
-                    Task resultTask = _transport.Value.Send(json.ToString(Newtonsoft.Json.Formatting.None));
-                    return resultTask;
-                }).ToArray();
-
-                var t = Task.WhenAll(sendTasks);
-                t.GetAwaiter().GetResult();
-                base.EmitBatch(events);
-            }
-            catch (Exception exc)
-            {
-                SelfLog.WriteLine("Oops something going wrong {0}", exc);
-            }
-            // ReSharper disable once PossibleMultipleEnumeration
-        }
-
-        protected override Task EmitBatchAsync(IEnumerable<LogEvent> events)
+        protected override async Task EmitBatchAsync(IEnumerable<LogEvent> events)
         {
             try
             {
+                var converter = _sinkComponentsBuilder.GetGelfConverter();
+                var transport = await _sinkComponentsBuilder.GetTransportAsync();
                 IEnumerable<Task> sendTasks = events.Select(logEvent =>
                 {
-                    JObject json = _converter.Value.GetGelfJson(logEvent);
-                    Task resultTask = _transport.Value.Send(json.ToString(Newtonsoft.Json.Formatting.None));
-                    return resultTask;
+                    JObject json = converter.GetGelfJson(logEvent);
+                    return transport.SendAsync(json.ToString(Newtonsoft.Json.Formatting.None));
                 });
-
-                return Task.WhenAll(sendTasks);
+                await Task.WhenAll(sendTasks);
             }
             catch (Exception exc)
             {
                 SelfLog.WriteLine("Oops something going wrong {0}", exc);
-                return Task.CompletedTask;
             }
         }
 
         protected override void Dispose(bool disposing)
         {
             base.Dispose(disposing);
-            _transport.Value?.Dispose();
+            _sinkComponentsBuilder?.Dispose();
         }
     }
 }

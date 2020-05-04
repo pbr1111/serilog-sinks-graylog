@@ -28,13 +28,13 @@ namespace Serilog.Sinks.Graylog.Core.Transport.Udp
         /// </summary>
         /// <param name="message">The message.</param>
         /// <exception cref="System.ArgumentException">message was too long</exception>
-        public Task Send(string message)
+        public async Task SendAsync(string message)
         {
-            byte[] compressedMessage = message.Compress();
-            IList<byte[]> chunks = _chunkConverter.ConvertToChunks(compressedMessage);
+            var compressedMessage = await message.CompressAsync();
+            var chunks = _chunkConverter.ConvertToChunks(compressedMessage);
 
-            IEnumerable<Task> sendTasks = chunks.Select(c => _transportClient.Send(c));
-            return Task.WhenAll(sendTasks.ToArray());
+            var sendTasks = chunks.Select(c => _transportClient.SendAsync(c));
+            await Task.WhenAll(sendTasks.ToArray());
         }
 
         public void Dispose()

@@ -56,20 +56,21 @@ namespace Serilog.Sinks.Graylog
                                                   string messageTemplateFieldName = GraylogSinkOptionsBase.DefaultMessageTemplateFieldName
                                                   )
         {
-            // ReSharper disable once UseObjectOrCollectionInitializer
-            var options = new GraylogSinkOptions();
-            options.HostnameOrAddress = hostnameOrAddress.Expand();
-            options.Port = port;
-            options.TransportType = transportType;
-            options.MinimumLogEventLevel = minimumLogEventLevel;
-            options.MessageGeneratorType = messageIdGeneratorType;
-            options.ShortMessageMaxLength = shortMessageMaxLength;
-            options.StackTraceDepth = stackTraceDepth;
-            options.Facility = facility.Expand();
-            options.MaxMessageSizeInUdp = maxMessageSizeInUdp;
-            options.Host = host;
-            options.IncludeMessageTemplate = includeMessageTemplate;
-            options.MessageTemplateFieldName = messageTemplateFieldName;
+            var options = new GraylogSinkOptions
+            {
+                HostnameOrAddress = hostnameOrAddress.Expand(),
+                Port = port,
+                TransportType = transportType,
+                MinimumLogEventLevel = minimumLogEventLevel,
+                MessageGeneratorType = messageIdGeneratorType,
+                ShortMessageMaxLength = shortMessageMaxLength,
+                StackTraceDepth = stackTraceDepth,
+                Facility = facility.Expand(),
+                MaxMessageSizeInUdp = maxMessageSizeInUdp,
+                Host = host,
+                IncludeMessageTemplate = includeMessageTemplate,
+                MessageTemplateFieldName = messageTemplateFieldName
+            };
             return loggerSinkConfiguration.Graylog(options);
         }
     }

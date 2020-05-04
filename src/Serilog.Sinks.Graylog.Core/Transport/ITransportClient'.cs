@@ -13,6 +13,6 @@ namespace Serilog.Sinks.Graylog.Core.Transport
         /// Sends the specified payload.
         /// </summary>
         /// <param name="payload">The payload.</param>
-        Task Send(T payload);
+        Task SendAsync(T payload);
     }
 }

@@ -12,9 +12,9 @@ namespace Serilog.Sinks.Graylog.Core.Transport.Http
             _transportClient = transportClient;
         }
 
-        public Task Send(string message)
+        public async Task SendAsync(string message)
         {
-            return _transportClient.Send(message);
+            await _transportClient.SendAsync(message);
         }
 
         public void Dispose()
